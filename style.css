@@ -164,6 +164,12 @@ body.dark-theme .panel-header {
   color: #c9d1d9;
 }
 
+.panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 #markdown-input {
   flex: 1;
   padding: 16px;

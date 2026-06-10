@@ -1,5 +1,8 @@
 // renderer.js - Markdown 阅读器核心逻辑
 
+// 引入 html2canvas
+const html2canvas = require('html2canvas')
+
 // 获取 DOM 元素
 const markdownInput = document.getElementById('markdown-input')
 const previewContent = document.getElementById('preview-content')
@@ -8,6 +11,7 @@ const btnSave = document.getElementById('btn-save')
 const btnExport = document.getElementById('btn-export')
 const btnSync = document.getElementById('btn-sync')
 const btnRefresh = document.getElementById('btn-refresh')
+const btnSnapshot = document.getElementById('btn-snapshot')
 const btnSplit = document.getElementById('btn-split')
 const btnTheme = document.getElementById('btn-theme')
 const filePathSpan = document.getElementById('file-path')
@@ -148,6 +152,36 @@ function refreshPreview() {
   updatePreview()
 }
 
+// 拍摄快照
+async function takeSnapshot() {
+  try {
+    statusText.textContent = '正在生成快照...'
+    
+    // 使用 html2canvas 捕获预览区域
+    const canvas = await html2canvas(previewContent, {
+      backgroundColor: '#ffffff',
+      scale: 2, // 提高分辨率
+      useCORS: true,
+      logging: false
+    })
+    
+    // 转换为 data URL
+    const dataUrl = canvas.toDataURL('image/png')
+    
+    // 调用主进程保存图片
+    const result = await window.electronAPI.exportImage(dataUrl)
+    
+    if (result) {
+      statusText.textContent = `快照已保存: ${result}`
+    } else {
+      statusText.textContent = '快照保存已取消'
+    }
+  } catch (error) {
+    console.error('生成快照失败:', error)
+    statusText.textContent = '生成快照失败'
+  }
+}
+
 // 切换布局（垂直/水平）
 function toggleSplit() {
   isVerticalSplit = !isVerticalSplit
@@ -226,6 +260,7 @@ markdownInput.addEventListener('scroll', syncScroll)
 btnOpen.addEventListener('click', openFile)
 btnSave.addEventListener('click', saveFile)
 btnExport.addEventListener('click', exportHtml)
+btnSnapshot.addEventListener('click', takeSnapshot)
 btnSync.addEventListener('click', toggleSync)
 btnRefresh.addEventListener('click', refreshPreview)
 btnSplit.addEventListener('click', toggleSplit)
@@ -249,6 +284,12 @@ document.addEventListener('keydown', (e) => {
   if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
     e.preventDefault()
     exportHtml()
+  }
+  
+  // Ctrl/Cmd + Shift + S - 快照下载
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 's') {
+    e.preventDefault()
+    takeSnapshot()
   }
 })
 

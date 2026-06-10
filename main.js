@@ -90,3 +90,22 @@ ipcMain.handle('export-html', async (event, htmlContent) => {
   }
   return null
 })
+
+// 处理导出图片
+ipcMain.handle('export-image', async (event, imageData) => {
+  const result = await dialog.showSaveDialog(mainWindow, {
+    filters: [
+      { name: 'PNG Images', extensions: ['png'] },
+      { name: 'All Files', extensions: ['*'] }
+    ]
+  })
+  
+  if (!result.canceled) {
+    // 从 data URL 提取 base64 数据
+    const base64Data = imageData.replace(/^data:image\/png;base64,/, '')
+    const buffer = Buffer.from(base64Data, 'base64')
+    fs.writeFileSync(result.filePath, buffer)
+    return result.filePath
+  }
+  return null
+})
