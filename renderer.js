@@ -1,8 +1,5 @@
 // renderer.js - Markdown 阅读器核心逻辑
 
-// 引入 html2canvas
-const html2canvas = require('html2canvas')
-
 // 获取 DOM 元素
 const markdownInput = document.getElementById('markdown-input')
 const previewContent = document.getElementById('preview-content')
@@ -14,6 +11,7 @@ const btnRefresh = document.getElementById('btn-refresh')
 const btnSnapshot = document.getElementById('btn-snapshot')
 const btnSplit = document.getElementById('btn-split')
 const btnTheme = document.getElementById('btn-theme')
+const btnFullscreenPreview = document.getElementById('btn-fullscreen-preview')
 const filePathSpan = document.getElementById('file-path')
 const statusText = document.getElementById('status-text')
 const charCount = document.getElementById('char-count')
@@ -26,6 +24,7 @@ let currentFilePath = null
 let isSynced = true
 let isDarkTheme = false
 let isVerticalSplit = true
+let isFullscreenPreview = false
 
 // 初始化 marked
 marked.setOptions({
@@ -152,6 +151,20 @@ function refreshPreview() {
   updatePreview()
 }
 
+// 保存快照图片（Electron 对话框或浏览器下载）
+async function saveSnapshotImage(dataUrl) {
+  if (window.electronAPI?.exportImage) {
+    return await window.electronAPI.exportImage(dataUrl)
+  }
+
+  const filename = `snapshot-${Date.now()}.png`
+  const link = document.createElement('a')
+  link.download = filename
+  link.href = dataUrl
+  link.click()
+  return filename
+}
+
 // 拍摄快照
 async function takeSnapshot() {
   try {
@@ -168,8 +181,7 @@ async function takeSnapshot() {
     // 转换为 data URL
     const dataUrl = canvas.toDataURL('image/png')
     
-    // 调用主进程保存图片
-    const result = await window.electronAPI.exportImage(dataUrl)
+    const result = await saveSnapshotImage(dataUrl)
     
     if (result) {
       statusText.textContent = `快照已保存: ${result}`
@@ -209,6 +221,25 @@ function toggleTheme() {
     document.body.classList.remove('dark-theme')
     btnTheme.textContent = '🌓'
     btnTheme.title = '切换到暗色主题'
+  }
+}
+
+// 全屏预览
+function toggleFullscreenPreview() {
+  isFullscreenPreview = !isFullscreenPreview
+  if (isFullscreenPreview) {
+    document.body.classList.add('fullscreen-preview')
+    btnFullscreenPreview.textContent = '✕'
+    btnFullscreenPreview.title = '退出全屏'
+    statusText.textContent = '全屏预览模式（按 Esc 退出）'
+  } else {
+    document.body.classList.remove('fullscreen-preview')
+    btnFullscreenPreview.textContent = '⛶'
+    btnFullscreenPreview.title = '全屏预览'
+    statusText.textContent = '退出全屏预览'
+    setTimeout(() => {
+      statusText.textContent = '就绪'
+    }, 2000)
   }
 }
 
@@ -265,6 +296,7 @@ btnSync.addEventListener('click', toggleSync)
 btnRefresh.addEventListener('click', refreshPreview)
 btnSplit.addEventListener('click', toggleSplit)
 btnTheme.addEventListener('click', toggleTheme)
+btnFullscreenPreview.addEventListener('click', toggleFullscreenPreview)
 
 // 键盘快捷键
 document.addEventListener('keydown', (e) => {
@@ -290,6 +322,12 @@ document.addEventListener('keydown', (e) => {
   if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 's') {
     e.preventDefault()
     takeSnapshot()
+  }
+
+  // Esc - 退出全屏预览
+  if (e.key === 'Escape' && isFullscreenPreview) {
+    e.preventDefault()
+    toggleFullscreenPreview()
   }
 })
 
