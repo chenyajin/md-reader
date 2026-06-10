@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MD Reader - Markdown 在线阅读器</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.1.0/github-markdown-light.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 顶部工具栏 -->
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <button id="btn-open" class="btn btn-primary">📂 打开文件</button>
+                <button id="btn-save" class="btn btn-secondary">💾 保存</button>
+                <button id="btn-export" class="btn btn-secondary">📄 导出HTML</button>
+                <span class="file-path" id="file-path">未打开文件</span>
+            </div>
+            <div class="toolbar-right">
+                <button id="btn-split" class="btn btn-icon" title="切换布局">⊞</button>
+                <button id="btn-theme" class="btn btn-icon" title="切换主题">🌓</button>
+            </div>
+        </div>
+
+        <!-- 主内容区域 -->
+        <div class="main-content" id="main-content">
+            <!-- 左侧：Markdown 编辑区 -->
+            <div class="editor-panel" id="editor-panel">
+                <div class="panel-header">
+                    <span>📝 Markdown 编辑</span>
+                    <button id="btn-sync" class="btn btn-small" title="同步滚动">🔗</button>
+                </div>
+                <textarea id="markdown-input" placeholder="在这里输入 Markdown 内容，或者点击「打开文件」按钮打开 .md 文件...
+
+# 欢迎使用 MD Reader
+
+这是一个 **Markdown 在线阅读器**，支持：
+
+- ✅ 实时预览
+- ✅ 打开 .md 文件
+- ✅ 导出 HTML
+- ✅ 分屏查看
+
+## 功能特性
+
+1. **实时预览** - 左侧编辑，右侧即时查看效果
+2. **文件操作** - 打开、保存 Markdown 文件
+3. **导出功能** - 将 Markdown 导出为 HTML 文件
+4. **主题切换** - 支持亮色/暗色主题
+
+---
+
+开始编辑吧！"></textarea>
+            </div>
+
+            <!-- 拖拽分割线 -->
+            <div class="divider" id="divider"></div>
+
+            <!-- 右侧：预览区 -->
+            <div class="preview-panel" id="preview-panel">
+                <div class="panel-header">
+                    <span>👁️ 实时预览</span>
+                    <button id="btn-refresh" class="btn btn-small" title="刷新预览">🔄</button>
+                </div>
+                <div id="preview-content" class="preview-content markdown-body">
+                    <p class="placeholder">预览将在这里显示...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部状态栏 -->
+        <div class="status-bar">
+            <div class="status-left">
+                <span id="status-text">就绪</span>
+            </div>
+            <div class="status-right">
+                <span id="char-count">字符: 0</span>
+                <span id="line-count">行数: 0</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/11.1.1/marked.min.js"></script>
+    <script src="renderer.js"></script>
+</body>
+</html>
